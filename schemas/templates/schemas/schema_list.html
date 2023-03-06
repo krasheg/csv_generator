@@ -1,10 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'schemas/base.html' %}
+
+{% block body_block %}
+
+<h2>Data schemas</h2>
+<a href="{% url 'create_schema' %}">
+    <button type="button" class="btn btn-success">New schema</button>
+</a>
+
+<table class="table">
+    <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Title</th>
+      <th scope="col">Modified</th>
+      <th scope="col">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for schema in object_list %}
+    <tr>
+        <th scope="row">{{schema.id}}</th>
+        <td><a href="#"><button type="button" class="btn btn-link">{{schema.name }}</button></a></td>
+        <td>{{ schema.updated_at }}</td>
+        <td>
+            <a href="{% url 'update_schema' schema.id %}"><button type="button" class="btn btn-link">Edit schema</button></a>
+            <a href="{% url 'delete_schema' schema.id %}">
+                <button type="button" class="btn btn-link text-danger">Delete</button>
+            </a>
+        </td>
+    </tr>
+    {% empty %}
+       <p>No schemas yet.</p>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
+
+
+

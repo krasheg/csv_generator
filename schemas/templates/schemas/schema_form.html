@@ -1,10 +1,80 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'schemas/base.html' %}
+{% load bootstrap4 %}
+
+{% block body_block %}
+
+
+    <h1>Schema</h1>
+    <form method="post">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        <button type="submit" class="btn btn-primary">Submit</button>
+        <h2>Schema columns</h2>
+        {{ columns.management_form }}
+        <div id='form_set'>
+            {% for column in columns %}
+                <div class="form-inline">
+                    {% bootstrap_form column show_label=0 field_class='p-1 ' %}
+                    <button type="button" class="btn btn-outline-danger" onclick="deleteRow(this)">Delete</button>
+                </div>
+            {% endfor %}
+        </div>
+        <div id="empty_form" class="d-none">
+            <div class="form-inline">
+                {% bootstrap_form columns.empty_form show_label=0 field_class='p-1 ' %}
+                <button type="button" class="btn btn-outline-danger" onclick="deleteRow(this)">Delete</button>
+            </div>
+        </div>
+        <button type="button" class="btn btn-primary" id=add_column> Add column</button>
+    </form>
+
+
+
+    <script>
+        $(document).ready(function () {
+            $('#add_column').click(function () {
+                var form_idx = $('#id_column_set-TOTAL_FORMS').val();
+                $('#form_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
+                $('#id_column_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+            });
+
+        });
+    </script>
+
+
+    <script type="text/javascript">
+        function hide_range(column_type_name) {
+
+            // Отримуємо ID елемента column_type
+            let column_type_id = column_type_name.split('-')[1];
+
+            // Отримуємо ID рядка формсету, в якому знаходиться елемент column_type
+            let row_id = column_type_id.replace(/column_type-\d+-/, "");
+
+            // Формуємо імена полів range_from та range_to для поточного рядка
+            let range_from_field_name = "column_set-" + row_id + "-range_from";
+            let range_to_field_name = "column_set-" + row_id + "-range_to";
+            let column_type_field_name = "column_set-" + row_id + "-column_type";
+
+            // Отримуємо елементи range_from та range_to
+            let range_from_element = document.getElementsByName(range_from_field_name)[0];
+            let range_to_element = document.getElementsByName(range_to_field_name)[0];
+            let column_type_element = document.getElementsByName(column_type_field_name)[0];
+
+            if (column_type_element.value === "Integer") {
+                range_from_element.style.display = "block";
+                range_to_element.style.display = "block";
+            } else {
+                range_from_element.style.display = "none";
+                range_to_element.style.display = "none";
+            }
+        }
+    </script>
+    <script type="text/javascript">
+        function deleteRow(button) {
+            const row = button.closest('.form-inline');
+            row.parentNode.removeChild(row);
+        }
+    </script>
+
+{% endblock %}
