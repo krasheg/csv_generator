@@ -1,12 +1,13 @@
+import time
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
-from django.http import HttpResponseRedirect
-from django.shortcuts import redirect
-from django.urls import reverse_lazy
-from django.views.generic import ListView
+from django.http import HttpResponseRedirect, JsonResponse
+from django.urls import reverse_lazy, reverse
+from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
-from .models import Schema, Column
-from .forms import ColumnFormSet
+from .models import Schema, Column, DataSet
+from .forms import ColumnFormSet, DataSetForm
 
 
 class SchemaListView(LoginRequiredMixin, ListView):
@@ -23,12 +24,12 @@ class SchemaCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('list')
 
     def get_context_data(self, **kwargs):
-        data = super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         if self.request.POST:
-            data["columns"] = ColumnFormSet(self.request.POST)
+            context["columns"] = ColumnFormSet(self.request.POST)
         else:
-            data["columns"] = ColumnFormSet()
-        return data
+            context["columns"] = ColumnFormSet()
+        return context
 
     def form_valid(self, form):
         context = self.get_context_data()
@@ -52,12 +53,12 @@ class SchemaUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('list')
 
     def get_context_data(self, **kwargs):
-        data = super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         if self.request.POST:
-            data["columns"] = ColumnFormSet(self.request.POST, instance=self.object)
+            context["columns"] = ColumnFormSet(self.request.POST, instance=self.object)
         else:
-            data["columns"] = ColumnFormSet(instance=self.object)
-        return data
+            context["columns"] = ColumnFormSet(instance=self.object)
+        return context
 
     def form_valid(self, form):
         context = self.get_context_data()
@@ -70,7 +71,28 @@ class SchemaUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class SchemaDeleteView(DeleteView):
+class SchemaDetailView(LoginRequiredMixin, DetailView):
+    model = Schema
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['columns'] = Column.objects.filter(schema_id=self.object.id).select_related()
+        context['datasets'] = DataSet.objects.filter(schema_id=self.object.id).select_related()
+        if self.request.POST:
+            context['create_dataset'] = DataSetForm(self.request.POST)
+        else:
+            context['create_dataset'] = DataSetForm()
+        return context
+
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return HttpResponseRedirect(
+            reverse("schemas_detail", kwargs={"pk": self.get_object().pk}))
+
+
+class SchemaDeleteView(LoginRequiredMixin, DeleteView):
     model = Schema
     success_url = reverse_lazy('list')
 
@@ -79,3 +101,15 @@ class SchemaDeleteView(DeleteView):
             return HttpResponseRedirect(self.success_url)
         else:
             return super().post(request, *args, **kwargs)
+
+
+def generate_dataset(request):
+    if request.method == 'POST':
+        schema_id = request.POST.get('schema_id')
+        rows = int(request.POST.get('rows'))
+        schema = Schema.objects.get(id=schema_id)
+        # Create dataset based on schema
+        dataset = DataSet.objects.create(schema=schema, rows=rows)
+        dataset.save()
+        dataset.create_csv_file()
+        return JsonResponse({'status': 'success'})

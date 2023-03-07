@@ -1,0 +1,101 @@
+{% extends 'schemas/base.html' %}
+{% load bootstrap4 %}
+
+{% block body_block %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <table class="table table-striped">
+        <h3>Sample schema: {{ object.name }} </h3>
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Column type</th>
+        </tr>
+        </thead>
+        {% for col in columns %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ col.name }} </td>
+                <td>{{ col.column_type }} </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+
+
+
+        <div class="row">
+            <div class="col-md-8"><h3>Datasets </h3></div>
+            <div class="col-md-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group form-inline">
+                        {% bootstrap_form create_dataset %}
+                        <br>
+                        <button class="btn btn-success" id="schem" type="submit" data-type="{{ schema.id }}">Generate
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <table class="table table-striped" id="datasets-table">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Created at</th>
+            <th>Rows</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        {% for ds in datasets %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ ds.created_at|date:"Y-m-d" }} </td>
+                <td>{{ ds.rows }}</td>
+                {% if ds.id == datasets.first.id %}
+                    <td id="tasks">{{ ds.status }}</td>
+                {% else %}
+                    {% if ds.status %}
+                        <td style="color: green">{{ ds.status }}</td>
+                    {% endif %}
+                {% endif %}
+                {% if ds.download_url %}
+                    <td><a href="{{ ds.download_url }}">Download </a></td>
+
+                {% else %}
+                    <td><a  href="{% url 'detail_schema' schema.id %}">Processing... </a>
+                    </td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </table>
+    <script>
+        $(document).ready(function () {
+            $('#schem').on('click', function (e) {
+                e.preventDefault();
+                var schema_id = $(this).data('type');
+                var rows = $('#id_rows').val();
+                $.ajax({
+                    type: "POST",
+                    url: "{% url 'generate_dataset' %}",
+                    data: {
+                        'schema_id': schema_id,
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+                        'rows': rows
+                    },
+                    beforeSend: function () {
+                        $('#tasks').text('Processing...');
+                    },
+                    success: function (data) {
+                        $('#tasks').text('Ready');
+                    }
+                });
+            });
+        });
+
+    </script>
+{% endblock %}
+

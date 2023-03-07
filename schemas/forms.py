@@ -1,5 +1,5 @@
 from django import forms
-from .models import Schema, Column
+from .models import Schema, Column, DataSet
 
 ColumnFormSet = forms.inlineformset_factory(Schema, Column,
                                             fields=('name', 'column_type', 'order', 'range_from', 'range_to'),
@@ -16,3 +16,9 @@ class ColumnForm(forms.ModelForm):
     class Meta:
         model = Column
         fields = ('name', 'column_type', 'range_from', 'range_to', 'order')
+
+
+class DataSetForm(forms.ModelForm):
+    class Meta:
+        model = DataSet
+        fields = ['rows']
