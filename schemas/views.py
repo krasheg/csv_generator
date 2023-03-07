@@ -3,6 +3,7 @@ import time
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.http import HttpResponseRedirect, JsonResponse
+from django.shortcuts import render
 from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
@@ -89,7 +90,7 @@ class SchemaDetailView(LoginRequiredMixin, DetailView):
 
     def post(self, request, *args, **kwargs):
         return HttpResponseRedirect(
-            reverse("schemas_detail", kwargs={"pk": self.get_object().pk}))
+            reverse("detail_schema", kwargs={"pk": self.get_object().pk}))
 
 
 class SchemaDeleteView(LoginRequiredMixin, DeleteView):
@@ -110,6 +111,9 @@ def generate_dataset(request):
         schema = Schema.objects.get(id=schema_id)
         # Create dataset based on schema
         dataset = DataSet.objects.create(schema=schema, rows=rows)
+        count = DataSet.objects.count()
         dataset.save()
+        id = dataset.id
+        created_at = dataset.created_at
         dataset.create_csv_file()
-        return JsonResponse({'status': 'success'})
+        return JsonResponse({'id': id, 'created_at': created_at,'count': count})

@@ -4,7 +4,7 @@ from faker import Faker
 def fake_data(column_type, value_range=(0, 10)):
     faker = Faker()
     allowed_methods = {
-        'Full name': faker.name(),
+        'Full Name': faker.name(),
         'Job': faker.job(),
         'Email': faker.safe_email(),
         'Company': faker.company(),

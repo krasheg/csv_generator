@@ -21,7 +21,7 @@
         {% endfor %}
     </table>
 
-
+    <table class="table table-striped ">
 
 
         <div class="row">
@@ -40,7 +40,7 @@
             </div>
         </div>
 
-        <table class="table table-striped" id="datasets-table">
+
         <thead>
         <tr>
             <th>#</th>
@@ -66,7 +66,7 @@
                     <td><a href="{{ ds.download_url }}">Download </a></td>
 
                 {% else %}
-                    <td><a  href="{% url 'detail_schema' schema.id %}">Processing... </a>
+                    <td><a href="{% url 'detail_schema' schema.id %}">Processing... </a>
                     </td>
                 {% endif %}
             </tr>
@@ -91,6 +91,10 @@
                     },
                     success: function (data) {
                         $('#tasks').text('Ready');
+
+                    },
+                    complete: function () {
+                        location.reload();
                     }
                 });
             });
