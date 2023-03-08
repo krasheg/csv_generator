@@ -64,7 +64,7 @@
                 <td>{{ ds.created_at|date:"Y-m-d" }} </td>
                 <td>{{ ds.rows }}</td>
                 {% if ds.id == datasets.first.id %}
-                    <td id="tasks">{{ ds.status }}</td>
+                    <td id="tasks" style="color: green">{{ ds.status }}</td>
                 {% else %}
                     {% if ds.status %}
                         <td style="color: green">{{ ds.status }}</td>
@@ -96,7 +96,9 @@
                     $('<td>').text(!isNaN(parseFloat(rowIndex)) && isFinite(rowIndex) ? parseInt(rowIndex) + 1 : 1),
                     $('<td>').text(moment().format("YYYY-MM-DD")),
                     $('<td>').text(rows),
-                    $('<td>').text('Processing')
+                    $('<td>').text('Processing').css({
+                        'color': 'Blue'
+                    })
                 );
                 lastRow.after(newRow);
 
@@ -113,7 +115,9 @@
                         $('#dataset-table tbody tr:last td:last').text('Processing...');
                     },
                     success: function (data) {
-                        $('#dataset-table tbody tr:last td:last').text('Ready');
+                        $('#dataset-table tbody tr:last td:last').text('Ready').css({
+                            'color': 'Green'
+                        });
                     },
                     complete: function () {
                         location.reload();
