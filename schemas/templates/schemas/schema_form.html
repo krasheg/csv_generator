@@ -72,9 +72,13 @@
     </script>
     <script type="text/javascript">
         function deleteRow(button) {
-            const row = button.closest('.form-inline');
-            row.parentNode.removeChild(row);
-        }
+
+            var form_idx = $('#id_column_set-TOTAL_FORMS').val();
+            if (form_idx > 1) {
+                const row = button.closest('.form-inline');
+                row.parentNode.removeChild(row);
+                $('#id_column_set-TOTAL_FORMS').val(parseInt(form_idx) - 1);
+            }}
     </script>
 
 {% endblock %}

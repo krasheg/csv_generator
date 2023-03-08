@@ -21,26 +21,26 @@
         {% endfor %}
     </table>
 
-    <table class="table table-striped ">
 
 
-        <div class="row">
-            <div class="col-md-8"><h3>Datasets </h3></div>
-            <div class="col-md-4">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="form-group form-inline">
-                        {% bootstrap_form create_dataset %}
-                        <br>
-                        <button class="btn btn-success" id="schem" type="submit" data-type="{{ schema.id }}">Generate
-                        </button>
-                    </div>
 
-                </form>
-            </div>
+    <div class="row">
+        <div class="col-md-8"><h3>Datasets </h3></div>
+        <div class="col-md-4">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group form-inline">
+                    {% bootstrap_form create_dataset %}
+                    <br>
+                    <button class="btn btn-success" id="schem" type="submit" data-type="{{ schema.id }}">Generate
+                    </button>
+                </div>
+
+            </form>
         </div>
+    </div>
 
-
+    <table class="table table-striped" id="dataset-table">
         <thead>
         <tr>
             <th>#</th>
@@ -50,6 +50,14 @@
             <th>Actions</th>
         </tr>
         </thead>
+        {% if not datasets %}
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        {% endif %}
+
         {% for ds in datasets %}
             <tr>
                 <td>{{ forloop.counter }}</td>
@@ -72,12 +80,27 @@
             </tr>
         {% endfor %}
     </table>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
     <script>
         $(document).ready(function () {
             $('#schem').on('click', function (e) {
                 e.preventDefault();
                 var schema_id = $(this).data('type');
                 var rows = $('#id_rows').val();
+
+                // Додати рядок вкінці таблиці
+                var lastRow = $('#dataset-table tbody tr:last');
+                var rowIndex = lastRow.find('td:first').text();
+                var newRow = $('<tr>').append(
+                    $('<td>').text(!isNaN(parseFloat(rowIndex)) && isFinite(rowIndex) ? parseInt(rowIndex) + 1 : 1),
+                    $('<td>').text(moment().format("YYYY-MM-DD")),
+                    $('<td>').text(rows),
+                    $('<td>').text('Processing')
+                );
+                lastRow.after(newRow);
+
+
                 $.ajax({
                     type: "POST",
                     url: "{% url 'generate_dataset' %}",
@@ -87,11 +110,10 @@
                         'rows': rows
                     },
                     beforeSend: function () {
-                        $('#tasks').text('Processing...');
+                        $('#dataset-table tbody tr:last td:last').text('Processing...');
                     },
                     success: function (data) {
-                        $('#tasks').text('Ready');
-
+                        $('#dataset-table tbody tr:last td:last').text('Ready');
                     },
                     complete: function () {
                         location.reload();
@@ -99,7 +121,6 @@
                 });
             });
         });
-
     </script>
 {% endblock %}
 
