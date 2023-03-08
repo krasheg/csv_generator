@@ -5,7 +5,7 @@ from .services import fake_data
 
 import csv
 import os
-from csv_generator.settings import MEDIA_ROOT,MEDIA_URL
+from csv_generator.settings import MEDIA_ROOT, MEDIA_URL
 
 UserModel = get_user_model()
 
@@ -58,7 +58,6 @@ class DataSet(models.Model):
 
     def create_csv_file(self):
         schema = self.schema
-        print(schema)
         try:
             os.mkdir(MEDIA_ROOT)
         except OSError:

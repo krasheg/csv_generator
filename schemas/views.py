@@ -1,9 +1,6 @@
-import time
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.http import HttpResponseRedirect, JsonResponse
-from django.shortcuts import render
 from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
@@ -113,7 +110,7 @@ def generate_dataset(request):
         dataset = DataSet.objects.create(schema=schema, rows=rows)
         count = DataSet.objects.count()
         dataset.save()
-        id = dataset.id
+        _id = dataset.id
         created_at = dataset.created_at
         dataset.create_csv_file()
-        return JsonResponse({'id': id, 'created_at': created_at,'count': count})
+        return JsonResponse({'id': _id, 'created_at': created_at, 'count': count})
